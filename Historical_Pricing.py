@@ -243,7 +243,7 @@ st.write("Enter your parameters in the sidebar to create a table of historical o
 # Construct Side Bar
 profile_url = "www.linkedin.com/in/thomas-gray-4223a728b"
 with st.sidebar:
-    components.iframe(profile_url, height = 100)
+    components.iframe(profile_url)
 st.sidebar.header("Parameters")
 ticker_input = st.sidebar.text_input("Ticker", value = "AAPL")
 strike_input = st.sidebar.number_input("Strike Price", value = float(220), min_value=0.5, step = 0.5)
