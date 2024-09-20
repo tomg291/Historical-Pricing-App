@@ -242,7 +242,7 @@ st.write("Enter your parameters in the sidebar to create a table of historical o
 
 # Construct Side Bar
 linkedin_url = "https://www.linkedin.com/in/thomas-gray-4223a728b"
-st.sidebar.write(f"[![LinkedIn](https://icons8.com/icon/13930/linkedin)Connect with me on LinkedIn]({linkedin_url})")
+st.sidebar.markdown(f"[![LinkedIn](https://img.icons8.com/color/48/000000/linkedin.png)Add me on LinkedIn!]({linkedin_url})")
 st.sidebar.header("Parameters")
 ticker_input = st.sidebar.text_input("Ticker", value = "AAPL")
 strike_input = st.sidebar.number_input("Strike Price", value = float(220), min_value=0.5, step = 0.5)
