@@ -310,4 +310,4 @@ if st.session_state.data is not None:
 else:
     st.warning("Waiting for data")
 
-st.write(f"If you have any questions or suggestions please contact me via LinkedIn)
+st.write("If you have any questions or suggestions please contact me via LinkedIn")
