@@ -307,6 +307,8 @@ if st.session_state.data is not None:
         st.write(f"Puts test statistic: {round(gof[1],2)}")
         st.write(f"Puts critical value: {round(gof[3],2)}")
         st.write(f"Put Values: {gof[5]}")
-    st.write(gof[6])
+    #st.write(gof[6])
 else:
     st.warning("Waiting for data")
+
+st.write(f"If you have any questions or suggestions please [contact me via LinkedIn]({profile_url})")
