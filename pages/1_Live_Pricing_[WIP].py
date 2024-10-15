@@ -42,15 +42,15 @@ ticker = st.sidebar.text_input("Ticker", "SOFI")
 exchange = st.sidebar.text_input("Exchange", "NASDAQ")
 real_time_price = get_price(ticker = ticker, exchange = exchange)
 
-strike_list = [x/2 for x in range(5, 21)]
+strike_list = [x/2 for x in range(5, 21)] + [x for x in range(22,300)]
 strike_price = st.sidebar.multiselect("Strike Prices", strike_list)
 
 expiration = st.sidebar.date_input("Expiration Date", value=dt.datetime.today())
 days = days_to_expiration(dt.datetime.today(), expiration)
 days = days[1]
 
-rate = st.sidebar.number_input("Risk-Free Interest Rate", value = 3.90, min_value=float(0), step=0.01)
-volatility = st.sidebar.number_input("Volatility %", value=float(54), min_value=float(0), step=0.01)
+rate = st.sidebar.number_input("Risk-Free Interest Rate", value = 4.50, min_value=float(0), step=0.01)
+volatility = st.sidebar.number_input("Volatility %", value=float(55), min_value=float(0), step=0.01)
 
 
 df = []
