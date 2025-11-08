@@ -179,7 +179,14 @@ def get_prices_merge(ticker, strike, start, expiry_day, expiry_month, expiry_yea
     # Merge data frames
     options_df = pd.merge(dfcalls, dfputs[["date","put price"]], on = "date", how = "left")
     prices_df = pd.merge(options_df, df_underlying, on = "date", how = "left")
+    # print(prices_df.index.names)
+    # print(rates.index.names)
+    # print(prices_df.columns)
+    # print(rates.columns)
+    # Flatten MultiIndex columns in rates
+    rates.columns = [col[0] if col[0] else col[1] for col in rates.columns]
     rates_df = pd.merge(prices_df, rates, on="date", how = "left")
+
     return rates_df
 
 #------ Add Theoretical Prices ------#
@@ -228,86 +235,88 @@ def format_df(df):
 
     return final_df
 
+if __name__ == "__main__":
 
-#------ Streamlit Interface ------#
-st.set_page_config(page_title="Historical Options Pricing", page_icon=":bank:")
+    #------ Streamlit Interface ------#
+    st.set_page_config(page_title="Historical Options Pricing", page_icon=":bank:")
 
-if "data" not in st.session_state:
-    st.session_state.data = None
-if "formatted_df" not in st.session_state:
-    st.session_state.formatted_df = None
+    if "data" not in st.session_state:
+        st.session_state.data = None
+    if "formatted_df" not in st.session_state:
+        st.session_state.formatted_df = None
 
-st.subheader("Historical Options Pricer Using Black-Scholes Model")
-st.write("Enter your parameters in the sidebar to create a table of historical options and stock data")
+    st.subheader("Historical Options Pricer Using Black-Scholes Model")
+    st.write("Enter your parameters in the sidebar to create a table of historical options and stock data")
 
-# Construct Side Bar
-linkedin_url = "https://www.linkedin.com/in/thomas-gray-4223a728b"
-st.sidebar.markdown(f"[![LinkedIn](https://img.icons8.com/color/48/000000/linkedin.png)Add me on LinkedIn!]({linkedin_url})")
-st.sidebar.header("Parameters")
-ticker_input = st.sidebar.text_input("Ticker", value = "AAPL")
-strike_input = st.sidebar.number_input("Strike Price", value = float(220), min_value=0.5, step = 0.5)
-exDate_input = st.sidebar.date_input("Expiration Date",
-                            value = dt.date(2024, 8, 30),
-                            min_value = dt.date(2020, 1, 1)#,
-                            #max_value = dt.datetime.today()
-                            )
+    # Construct Side Bar
+    st.sidebar.header("Parameters")
+    ticker_input = st.sidebar.text_input("Ticker", value = "AAPL")
+    strike_input = st.sidebar.number_input("Strike Price", value = float(220), min_value=0.5, step = 0.5)
+    exDate_input = st.sidebar.date_input("Expiration Date",
+                                value = dt.date(2025, 11, 7),
+                                min_value = dt.date(2020, 1, 1)#,
+                                #max_value = dt.datetime.today()
+                                )
 
-#------ Create standard startdate ------#
-delta = dt.timedelta(days = 30)
-basic_start = exDate_input - delta
-start_input = st.sidebar.date_input("Start Date", 
-                                    value = basic_start,
-                                    min_value = dt.date(2020, 1, 1),
-                                    max_value = dt.datetime.today() 
-                                    )
+    #------ Create standard startdate ------#
+    delta = dt.timedelta(days = 30)
+    basic_start = exDate_input - delta
+    start_input = st.sidebar.date_input("Start Date", 
+                                        value = basic_start,
+                                        min_value = dt.date(2020, 1, 1),
+                                        max_value = dt.datetime.today() 
+                                        )
 
-#risk_free_rate  = st.sidebar.number_input("Risk-Free Interest Rate", value = 3.85, min_value=float(0), step=0.01)
-vol_days = st.sidebar.slider("No. of Days Used to Calculate Historical Volatility", min_value=1, max_value=250, value=21)
+    #risk_free_rate  = st.sidebar.number_input("Risk-Free Interest Rate", value = 3.85, min_value=float(0), step=0.01)
+    vol_days = st.sidebar.slider("No. of Days Used to Calculate Historical Volatility", min_value=1, max_value=250, value=21)
 
-exDay_input = exDate_input.strftime("%d") 
-exMonth_input = exDate_input.strftime("%m")
-exYear_input = exDate_input.strftime("%y")
+    exDay_input = exDate_input.strftime("%d") 
+    exMonth_input = exDate_input.strftime("%m")
+    exYear_input = exDate_input.strftime("%y")
 
 
-#------ Sidebar and Table Generation ------#
-if st.sidebar.button("Generate Table"):
-    with st.spinner("Generating table..."):
-        df = get_prices_merge(ticker_input, strike_input, start_input.strftime("%Y-%m-%d"), exDay_input, exMonth_input, exYear_input, vol_days=vol_days)
-        if isinstance(df, int):
-            st.error(f"Error {df}")
-            if df == 429:
-                st.error("You can only attempt to generate a table twice in one minute")
-        if df is None:
-            st.error("Couldn't retrieve data, please check inputs")
-        else:
-            df = append_theoretical(df, strike_input)#, risk_free_rate)
-            formatted_df = format_df(df)
-            st.session_state.data = df
-            st.session_state.formatted_df = formatted_df
-            st.line_chart(st.session_state.formatted_df, x="Date", y=["Call Price", "Theoretical Call Price"], color=["#27ae60","#3498db"])
-            st.line_chart(st.session_state.formatted_df, x="Date", y=["Put Price", "Theoretical Put Price"], color=["#27ae60","#3498db"])
-            price_cols = ["Stock Price", "Call Price", "Theoretical Call Price", "Put Price", "Theoretical Put Price"]
-            st.session_state.formatted_df[price_cols] = st.session_state.formatted_df[price_cols].applymap("${:,.2f}".format)
-            st.write(st.session_state.formatted_df)
-        
-st.divider()
+    #------ Sidebar and Table Generation ------#
+    if st.sidebar.button("Generate Table"):
+        with st.spinner("Generating table..."):
+            df = get_prices_merge(ticker_input, strike_input, start_input.strftime("%Y-%m-%d"), exDay_input, exMonth_input, exYear_input, vol_days=vol_days)
+            if isinstance(df, int):
+                st.error(f"Error {df}")
+                if df == 429:
+                    st.error("You can only attempt to generate a table twice in one minute")
+            if df is None:
+                st.error("Couldn't retrieve data, please check inputs")
+            else:
+                df = append_theoretical(df, strike_input)#, risk_free_rate)
+                formatted_df = format_df(df)
+                st.session_state.data = df
+                st.session_state.formatted_df = formatted_df
+                st.line_chart(st.session_state.formatted_df, x="Date", y=["Call Price", "Theoretical Call Price"], color=["#27ae60","#3498db"])
+                st.line_chart(st.session_state.formatted_df, x="Date", y=["Put Price", "Theoretical Put Price"], color=["#27ae60","#3498db"])
+                price_cols = ["Stock Price", "Call Price", "Theoretical Call Price", "Put Price", "Theoretical Put Price"]
+                st.session_state.formatted_df[price_cols] = st.session_state.formatted_df[price_cols].applymap("${:,.2f}".format)
+                st.write(st.session_state.formatted_df)
+            
+    st.divider()
 
-#------ Goodness of Fit Test ------#
-if st.session_state.data is not None:
-    st.subheader("Chi-Square Goodness-of-Fit Test")
-    sig_level = st.number_input("Significance Level %", value=float(1), step=0.01)
-    gof = chi_square(st.session_state.data, sig_level/100)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write(f"Calls test statistic: {round(gof[0],2)}")        
-        st.write(f"Calls critical value: {round(gof[2],2)}")
-        st.write(f"Call Values: {gof[4]}")
-    with col2:
-        st.write(f"Puts test statistic: {round(gof[1],2)}")
-        st.write(f"Puts critical value: {round(gof[3],2)}")
-        st.write(f"Put Values: {gof[5]}")
-    #st.write(gof[6])
-else:
-    st.warning("Waiting for data")
+    #------ Goodness of Fit Test ------#
+    if st.session_state.data is not None:
+        st.subheader("Chi-Square Goodness-of-Fit Test")
+        sig_level = st.number_input("Significance Level %", value=float(1), step=0.01)
+        gof = chi_square(st.session_state.data, sig_level/100)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"Calls test statistic: {round(gof[0],2)}")        
+            st.write(f"Calls critical value: {round(gof[2],2)}")
+            st.write(f"Call Values: {gof[4]}")
+        with col2:
+            st.write(f"Puts test statistic: {round(gof[1],2)}")
+            st.write(f"Puts critical value: {round(gof[3],2)}")
+            st.write(f"Put Values: {gof[5]}")
+        #st.write(gof[6])
+    else:
+        st.warning("Waiting for data")
 
-st.write("If you have any questions or suggestions please contact me via LinkedIn")
+    st.write("If you have any questions or suggestions please contact me via LinkedIn")
+
+    linkedin_url = "https://www.linkedin.com/in/thomas-gray-4223a728b"
+    st.sidebar.markdown(f"[![LinkedIn](https://img.icons8.com/color/48/000000/linkedin.png)Add me on LinkedIn!]({linkedin_url})")
