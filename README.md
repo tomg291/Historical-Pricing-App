@@ -47,3 +47,4 @@ To use this app, [try the online version here](https://historical-pricing.stream
 ```
 python -m streamlit run Historical_Pricing.py
 ```
+**Note:** The online version often doesn't work because the Yahoo Finance API rate limits requests coming from the Streamlit Community Cloud :(
