@@ -45,24 +45,29 @@ real_time_price = get_price(ticker = ticker, exchange = exchange)
 strike_list = [x/2 for x in range(5, 21)] + [x for x in range(22,300)]
 strike_price = st.sidebar.multiselect("Strike Prices", strike_list)
 
-expiration = st.sidebar.date_input("Expiration Date", value=dt.datetime.today())
-days = days_to_expiration(dt.datetime.today(), expiration)
-days = days[1]
+if strike_price:
 
-rate = st.sidebar.number_input("Risk-Free Interest Rate", value = 4.50, min_value=float(0), step=0.01)
-volatility = st.sidebar.number_input("Volatility %", value=float(55), min_value=float(0), step=0.01)
-
-
-df = []
-for price in strike_price:
-    df.append({"Strike": price,
-               "T Call Price": theoretical_call_price(spot = real_time_price, strike = price, time = days/365, rate = rate/100, volatility = volatility/100),
-               "T Put Price": theoretical_put_price(spot = real_time_price, strike = price, time = days/365, rate = rate/100, volatility = volatility/100)}
-    )
-df = pd.DataFrame(df)
-
-st.write(f"Real Time Price = ${real_time_price}")
-st.write(df.sort_values("Strike"))
-
-time.sleep(5)
-st.rerun()
+    expiration = st.sidebar.date_input("Expiration Date", value=dt.datetime.today())
+    days = days_to_expiration(dt.datetime.today(), expiration)
+    days = days[1]
+    
+    rate = st.sidebar.number_input("Risk-Free Interest Rate", value = 3.75, min_value=float(0), step=0.01)
+    volatility = st.sidebar.number_input("Volatility %", value=float(75), min_value=float(0), step=0.01)
+    
+    
+    df = []
+    for price in strike_price:
+        df.append({"Strike": price,
+                   "T Call Price": theoretical_call_price(spot = real_time_price, strike = price, time = days/365, rate = rate/100, volatility = volatility/100),
+                   "T Put Price": theoretical_put_price(spot = real_time_price, strike = price, time = days/365, rate = rate/100, volatility = volatility/100)}
+        )
+    df = pd.DataFrame(df)
+    
+    st.write(f"Real Time Price = ${real_time_price}")
+    st.write(df.sort_values("Strike"))
+    
+    time.sleep(5)
+    st.rerun()
+else:
+    st.warning("Choose strike prices of interest in the sidebar")
+    st.stop()
