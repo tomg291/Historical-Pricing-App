@@ -77,5 +77,6 @@ wcwidth==0.2.13
 webencodings==0.5.1
 yfinance==0.2.41
 zope.interface==7.0.3
-yf-core
+yfinance-helpers
+
 
